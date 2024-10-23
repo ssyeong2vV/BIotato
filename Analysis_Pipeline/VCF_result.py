@@ -114,7 +114,15 @@ tmp_result.drop(columns=['Rank'], inplace=True)
 if 'FS' not in tmp_result.columns:
     tmp_result = tmp_result.assign(FS='')
 
-front_columns = ['CLNSIG', 'Chrom.Pos', 'Gene', 'NM', 'HGVSc', 'HGVSp', 'exon', 'Func', 
+selected = []
+with open('/labmed/01.ALL/03.python/lsy/00.CODE/hg19_RefSeq_Selected.txt', 'r') as file :
+    lines = file.readlines()
+    for line in lines :
+        l = line.strip()
+        selected.append(l)
+tmp_result['main'] = tmp_result['NM'].apply(lambda x : '     O' if x in selected else "")
+
+front_columns = ['main','CLNSIG', 'Chrom.Pos', 'Gene', 'NM', 'HGVSc', 'HGVSp', 'exon', 'Func', 
     'Annotation', 'Annotation_Impact', 'VAF.var.freq', 'AD', 'DP', 'GQ', 'FS', 'FILTER', 
     'eQTLGen_snp_id', 'LOF', 'NMD', 'ONC', 'ONCDN', 'ONCDISDB', 'ONCREVSTAT', 'CLNALLELEID', 
     'CLNDN', 'CLNDISDB', 'CLNREVSTAT']
@@ -122,4 +130,5 @@ back_columns = ['Ref', 'Alt','Gene.refGeneWithVer', 'GeneDetail.refGeneWithVer',
 middle_columns = [col for col in tmp_result.columns if col not in front_columns + back_columns]
 new_column_order = front_columns + middle_columns + back_columns
 result = tmp_result[new_column_order]
+
 result.to_excel(f'{Name}.xlsx', index = False)
