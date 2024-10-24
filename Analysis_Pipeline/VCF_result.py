@@ -95,14 +95,28 @@ tmp_result.drop('AAChange.refGeneWithVer', axis=1, inplace=True)
 result_header = list(tmp_result.columns)
 result_header[5] = 'Func'
 result_header[22] = 'gnomAD_AF'
-result_header[201] = 'Depth'
+# result_header[201] = 'Depth'
+dp_columns = [i for i, col in enumerate(result_header) if col == 'DP']
+result_header[dp_columns[0]] = 'Depth'
+
 tmp_result.columns = result_header
 
 tmp_result['AD'] = tmp_result['AD'].str.split(r'[,\|]').str[-1].astype(int)
-tmp_result['VAF.var.freq'] = tmp_result['AD']/tmp_result['DP'].astype(int)
+# tmp_result['DP'] = tmp_result['DP'].replace('.', np.nan)
+# tmp_result['DP'] = tmp_result['DP'].fillna(0)
+tmp_result['DP'] = tmp_result['DP'].astype(int)
+tmp_result['VAF.var.freq'] = tmp_result['AD']/tmp_result['DP']
 tmp_result['Chr'] = 'chr'+tmp_result['Chr'].astype(str)
 tmp_result['Chrom.Pos'] = tmp_result['Chr'].astype(str)+':'+tmp_result['Start'].astype(str)+'-'+tmp_result['End'].astype(str)
 tmp_result.drop(labels = ['Chr','Start','End'], axis = 1,inplace = True)
+
+tmp_result['GQ'] = tmp_result['GQ'].astype(int)
+tmp_result['FS'] = tmp_result['FS'].replace('.', np.nan)
+tmp_result['FS'] = tmp_result['FS'].astype(float)
+tmp_result['gnomAD_AF'] = tmp_result['gnomAD_AF'].replace('.', np.nan)
+tmp_result['gnomAD_AF'] = tmp_result['gnomAD_AF'].astype(float)
+tmp_result['select'] = ""
+
 
 tmp_result.columns = tmp_result.columns.str.strip()
 tmp_result['Rank'] = tmp_result['Rank'].str.split('/').str[-1]
@@ -122,7 +136,7 @@ with open('/labmed/01.ALL/03.python/lsy/00.CODE/hg19_RefSeq_Selected.txt', 'r') 
         selected.append(l)
 tmp_result['main'] = tmp_result['NM'].apply(lambda x : '     O' if x in selected else "")
 
-front_columns = ['main','CLNSIG', 'Chrom.Pos', 'Gene', 'NM', 'HGVSc', 'HGVSp', 'exon', 'Func', 
+front_columns = ['select','main','CLNSIG', 'Chrom.Pos', 'Gene', 'NM', 'HGVSc', 'HGVSp', 'exon', 'Func', 
     'Annotation', 'Annotation_Impact', 'VAF.var.freq', 'AD', 'DP', 'GQ', 'FS', 'FILTER', 
     'eQTLGen_snp_id', 'LOF', 'NMD', 'ONC', 'ONCDN', 'ONCDISDB', 'ONCREVSTAT', 'CLNALLELEID', 
     'CLNDN', 'CLNDISDB', 'CLNREVSTAT']
